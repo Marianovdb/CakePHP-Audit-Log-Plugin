@@ -1,5 +1,7 @@
 # Audit Log Plugin
 
+This is a fork from https://github.com/robwilkerson/CakePHP-Audit-Log-Plugin.
+
 A logging plugin for [CakePHP](http://cakephp.org) 2.x. The included `AuditableBehavior`  creates an audit history for each instance of a model to which it's attached.
 
 The behavior tracks changes on two levels. It takes a snapshot of the fully hydrated object _after_ a change is complete and it also records each individual change in the case of an update action.
