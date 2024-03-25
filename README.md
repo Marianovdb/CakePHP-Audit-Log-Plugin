@@ -38,7 +38,7 @@ Use code from the `1.3` branch and follow the instructions in that README file. 
 From your `/app/` folder run:
 
 ```sh
-$ composer require robwilkerson/cakephp-audit-log-plugin
+$ composer require marianovdb/cakephp-audit-log-plugin
 ```    
 
 This will automatically update your `composer.json`, download and install the required packages.
@@ -50,7 +50,7 @@ This will automatically update your `composer.json`, download and install the re
 
 #### As a Submodule
 
-1. `$ git submodule add git://github.com/robwilkerson/CakePHP-Audit-Log-Plugin.git <path_to>/app/Plugin/AuditLog`
+1. `$ git submodule add https://github.com/Marianovdb/CakePHP-Audit-Log-Plugin.git <path_to>/app/Plugin/AuditLog`
 1. `$ git submodule init`
 1. `$ git submodule update`
 
