@@ -34,6 +34,8 @@ class AuditableBehaviorTest extends CakeTestCase {
 		$this->Tag = ClassRegistry::init('Tag');
         $this->Audit = ClassRegistry::init('AuditLog.Audit');
         $this->AuditDelta = ClassRegistry::init('AuditLog.AuditDelta');
+		$this->ArticleDontSaveCreateDelta = ClassRegistry::init('ArticleDontSaveCreateDelta');
+		$this->ArticleInclude = ClassRegistry::init('ArticleInclude');		
 	}
 
 /**
@@ -80,7 +82,98 @@ class AuditableBehaviorTest extends CakeTestCase {
 		$this->assertEquals('N', $article['Article']['published']);
 
 		// Verify that delta record were created, too.
-		$this->assertCount(7, $deltas);
+		$this->assertCount(6, $deltas);
+	}
+
+/**
+ * Test the action of creating a new record with dontSaveCreateDelta option.
+ *
+ * @return void
+ */
+	public function testCreateDontSaveCreateDelta() {
+		$newArticle = array(
+			'ArticleDontSaveCreateDelta' => array(
+				'user_id' => 1,
+				'author_id' => 1,
+				'title' => 'First Test Article',
+				'body' => 'First Test Article Body',
+				'published' => 'N',
+			),
+		);
+
+		$this->ArticleDontSaveCreateDelta->save($newArticle);
+		$audit = $this->Audit->find(
+			'first',
+			array(
+				'recursive' => -1,
+				'conditions' => array(
+					'Audit.event' => 'CREATE',
+					'Audit.model' => 'ArticleDontSaveCreateDelta',
+					'Audit.entity_id' => $this->ArticleDontSaveCreateDelta->getLastInsertId(),
+				),
+			)
+		);
+		$article = json_decode($audit['Audit']['json_object'], true);
+
+		$deltas = $this->AuditDelta->find(
+			'all',
+			array(
+				'recursive' => -1,
+				'conditions' => array('AuditDelta.audit_id' => $audit['Audit']['id']),
+			)
+		);
+
+		// Verify the audit record.
+		$this->assertEquals(1, $article['ArticleDontSaveCreateDelta']['user_id']);
+		$this->assertEquals('First Test Article', $article['ArticleDontSaveCreateDelta']['title']);
+		$this->assertEquals('N', $article['ArticleDontSaveCreateDelta']['published']);
+
+		// Verify that delta record were created, too.
+		$this->assertCount(0, $deltas);
+	}
+
+/**
+ * Test the action of creating a new record with include option.
+ *
+ * @return void
+ */
+	public function testCreateInclude() {
+		$newArticle = array(
+			'ArticleInclude' => array(
+				'user_id' => 1,
+				'author_id' => 1,
+				'title' => 'First Test Article',
+				'body' => 'First Test Article Body',
+				'published' => 'N',
+			),
+		);
+		$this->ArticleInclude->save($newArticle);
+		$audit = $this->Audit->find(
+			'first',
+			array(
+				'recursive' => -1,
+				'conditions' => array(
+					'Audit.event' => 'CREATE',
+					'Audit.model' => 'ArticleInclude',
+					'Audit.entity_id' => $this->ArticleInclude->getLastInsertId(),
+				),
+			)
+		);
+		$article = json_decode($audit['Audit']['json_object'], true);
+
+		$deltas = $this->AuditDelta->find(
+			'all',
+			array(
+				'recursive' => -1,
+				'conditions' => array('AuditDelta.audit_id' => $audit['Audit']['id']),
+			)
+		);
+		// Verify the audit record.
+		$this->assertEquals(1, $article['ArticleInclude']['user_id']);
+		$this->assertEquals('First Test Article', $article['ArticleInclude']['title']);
+
+		// Verify that delta record were created, too.
+		$this->assertCount(2, $deltas);
 	}
 
 /**
@@ -127,7 +220,7 @@ class AuditableBehaviorTest extends CakeTestCase {
 		$this->assertEquals('N', $article['Article']['published']);
 
 		// Verify that delta record were created, too.
-		$this->assertCount(7, $deltas);
+		$this->assertCount(5, $deltas);
 	}
 
 /**
@@ -170,9 +263,8 @@ class AuditableBehaviorTest extends CakeTestCase {
         $this->assertEquals(1, $article['Article']['user_id']);
         $this->assertEquals('Rob\'s Test Article', $article['Article']['title']);
         $this->assertEquals('Y', $article['Article']['published']);
-
         // Verify the delta records were created.
-        $this->assertCount(7, $articleAudit['AuditDelta']);
+        $this->assertCount(6, $articleAudit['AuditDelta']);
 
         $authorAudit = $this->Audit->find(
             'first',
@@ -266,9 +358,9 @@ class AuditableBehaviorTest extends CakeTestCase {
 		$this->assertEquals('Y', $article3['Article']['published']);
 
 		// Verify that no delta records were created.
-		$this->assertCount(7, $audits[0]['AuditDelta']);
-		$this->assertCount(7, $audits[1]['AuditDelta']);
-		$this->assertCount(7, $audits[2]['AuditDelta']);
+		$this->assertCount(6, $audits[0]['AuditDelta']);
+		$this->assertCount(6, $audits[1]['AuditDelta']);
+		$this->assertCount(6, $audits[2]['AuditDelta']);
 	}
 
 /**

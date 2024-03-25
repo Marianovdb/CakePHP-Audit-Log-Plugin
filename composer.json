@@ -1,5 +1,5 @@
 {
-    "name": "Marianovdb/CakePHP-Audit-Log-Plugin",
+    "name": "marianovdb/cakephp-audit-log-plugin",
     "type": "cakephp-plugin",
     "description": "Audit Plugin for CakePHP",
     "keywords": [
@@ -7,24 +7,31 @@
         "auditlog",
         "log",
         "audit trail",
-        "audit"
+        "audit",
+        "fork"
     ],
-    "homepage": "https://github.com/Marianovdb/CakePHP-Audit-Log-Plugin.gitn",
+    "homepage": "https://github.com/Marianovdb/CakePHP-Audit-Log-Plugin",
     "license": "MIT",
     "authors": [
         {
             "name": "Rob Wilkerson",
-            "homepage": "http://robwilkerson.org/"
+            "homepage": "http://robwilkerson.org/",
+            "role": "Original autor"
         },
         {
             "name": "Other contributors",
-            "homepage": "https://github.com/Marianovdb/CakePHP-Audit-Log-Plugin.gitn/graphs/contributors",
+            "homepage": "https://github.com/robwilkerson/CakePHP-Audit-Log-Plugin/graphs/contributors",
             "role": "Contributors"
+        },
+        {
+            "name": "Mariano De Bernardin",
+            "homepage": "https://github.com/Marianovdb",
+            "role": "Fork of plugin"
         }
     ],
     "support": {
-        "source": "https://github.com/Marianovdb/CakePHP-Audit-Log-Plugin.gitn",
-        "issues": "https://github.com/Marianovdb/CakePHP-Audit-Log-Plugin.gitn/issues"
+        "source": "https://github.com/Marianovdb/CakePHP-Audit-Log-Plugin",
+        "issues": "https://github.com/Marianovdb/CakePHP-Audit-Log-Plugin/issues"
     },
     "require": {
         "php": ">=5.3.0",

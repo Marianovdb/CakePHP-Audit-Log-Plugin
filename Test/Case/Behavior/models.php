@@ -43,6 +43,90 @@ class Article extends CakeTestModel {
 }
 
 /**
+ * Article with dontSaveCreateDelta option test model
+ */
+class ArticleDontSaveCreateDelta extends CakeTestModel {
+
+    /**
+     * The name of the model
+     *
+     * @var string
+     */
+    public $name = 'Article';
+
+    /**
+     * The behaviors
+     *
+     * @var array
+     */
+    public $actsAs = array(
+        'AuditLog.Auditable' => array(
+            'dontSaveCreateDelta' => null
+        ),
+    );
+
+    /**
+     * Belongs to relationships
+     *
+     * @var array
+     */
+    public $belongsTo = array('Author');
+
+    public $hasAndBelongsToMany = array(
+        'Tag' => array(
+            'className' => 'Tag',
+            'joinTable' => 'articles_tags',
+            'foreignKey' => 'article_id',
+            'associationForeignKey' => 'tag_id'
+        )
+    );
+}
+
+
+/**
+ * Article with include option test model
+ */
+class ArticleInclude extends CakeTestModel {
+
+    /**
+     * The name of the model
+     *
+     * @var string
+     */
+    public $name = 'Article';
+
+    /**
+     * The behaviors
+     *
+     * @var array
+     */
+    public $actsAs = array(
+        'AuditLog.Auditable' => array(
+            'include' => array(
+                'title',
+                'author_id'
+            ),
+        ),        
+    );
+
+    /**
+     * Belongs to relationships
+     *
+     * @var array
+     */
+    public $belongsTo = array('Author');
+
+    public $hasAndBelongsToMany = array(
+        'Tag' => array(
+            'className' => 'Tag',
+            'joinTable' => 'articles_tags',
+            'foreignKey' => 'article_id',
+            'associationForeignKey' => 'tag_id'
+        )
+    );
+}
+
+/**
  * Author test model
  */
 class Author extends CakeTestModel {

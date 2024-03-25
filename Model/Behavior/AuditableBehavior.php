@@ -44,10 +44,18 @@ class AuditableBehavior extends \ModelBehavior {
  *   - ignore array, optional
  *            An array of property names to be ignored when records
  *            are created in the deltas table.
+ * 	 - include array, optional
+ * 			  An array of property names to be included when records
+ * 			  are created in the deltas table. If this setting is set
+ * 			  all other propertys will be ignored automatically
  *   - habtm  array, optional
  *            An array of models that have a HABTM relationship with
  *            the acting model and whose changes should be monitored
  *            with the model.
+ *   - dontSaveCreateDelta key, optional
+ * 			  An key with the option name and null as value for 
+ * 			  disable the saving of the CREATE's records in 
+ * 			  audit_deltas table
  *
  * @param Model $Model The model using the behavior.
  * @param array $settings The settings overrides.
@@ -58,9 +66,18 @@ class AuditableBehavior extends \ModelBehavior {
 		if ($this->_isAuditLogModel($Model)) {
 			return;
 		}
-
+		// Ignore properties not included in the include option
+		if(array_key_exists('include', $settings)){
+			$propertys = array_keys($Model->schema());
+			foreach ($propertys as $key => $property) {
+				if(in_array($property, $settings['include'])){
+					unset($propertys[$key]);
+				}
+			}
+			$settings['ignore'] = $propertys;
+		}
 		if (!isset($this->settings[$Model->alias])) {
-			$this->settings[$Model->alias]['ignore'] = array('created', 'updated', 'modified');
+			$this->settings[$Model->alias]['ignore'] = array('created', 'updated', 'modified');					
 			$this->settings[$Model->alias]['habtm'] = array();
 			if (!isset($settings['habtm'])) {
 				$this->settings[$Model->alias]['habtm'] = count($Model->hasAndBelongsToMany) > 0
@@ -194,45 +211,48 @@ class AuditableBehavior extends \ModelBehavior {
 				'description' => isset($source['description']) ? $source['description'] : null,
 			),
 		);
-
 		// We have the audit_logs record, so let's collect the set of
 		// records that we'll insert into the audit_log_deltas table.
+		// if not set the dontSaveCreateDelta option
 		$updates = array();
-		foreach ($audit[$Model->alias] as $property => $value) {
-			$delta = array();
+		if(!array_key_exists('dontSaveCreateDelta', $this->settings[$Model->alias])){
+			foreach ($audit[$Model->alias] as $property => $value) {
+				$delta = array();
 
-			// Ignore virtual fields (Cake 1.3+) and specified properties.
-			if (($Model->hasMethod('isVirtualField') && $Model->isVirtualField($property))
-				|| in_array($property, $this->settings[$Model->alias]['ignore'])
-			) {
-				continue;
-			}
-
-			if ($created) {
-				$delta = array(
-					'AuditDelta' => array(
-						'property_name' => $property,
-						'old_value' => '',
-						'new_value' => $value,
-					),
-				);
-			} else {
-				if ((Hash::check($this->_getOriginalDataForModel($Model), $property)
-					&& Hash::get($this->_getOriginalDataForModel($Model), $property) != $value
-				) || (Hash::get($this->_getOriginalDataForModel($Model), $property) == null &&  $value != null and $value!="")) {
-					// If the property exists in the original _and_ the
-					// value is different, store it.
-					$delta = array(
-						'AuditDelta' => array(
-							'property_name' => $property,
-							'old_value' => Hash::get($this->_getOriginalDataForModel($Model), $property),
-							'new_value' => $value,
-						),
-					);
+				// Ignore virtual fields (Cake 1.3+) and specified properties.
+				if (($Model->hasMethod('isVirtualField') && $Model->isVirtualField($property))
+					|| in_array($property, $this->settings[$Model->alias]['ignore'])
+				) {
+					continue;
 				}
-			}
-			if (!empty($delta)) {
-				array_push($updates, $delta);
+				if ($created) {
+					if($value != '' && $value != null){
+						$delta = array(
+							'AuditDelta' => array(
+								'property_name' => $property,
+								'old_value' => '',
+								'new_value' => $value,
+							),
+						);
+					}				
+				} else {
+					if ((Hash::check($this->_getOriginalDataForModel($Model), $property)
+						&& Hash::get($this->_getOriginalDataForModel($Model), $property) != $value
+					) || (Hash::get($this->_getOriginalDataForModel($Model), $property) == null &&  $value != null and $value!="")) {
+						// If the property exists in the original _and_ the
+						// value is different, store it.
+						$delta = array(
+							'AuditDelta' => array(
+								'property_name' => $property,
+								'old_value' => Hash::get($this->_getOriginalDataForModel($Model), $property),
+								'new_value' => $value,
+							),
+						);
+					}
+				}
+				if (!empty($delta)) {
+					array_push($updates, $delta);
+				}
 			}
 		}
 
@@ -362,7 +382,6 @@ class AuditableBehavior extends \ModelBehavior {
 		$auditData = array(
 			$Model->alias => isset($data[$Model->alias]) ? $data[$Model->alias] : array(),
 		);
-
 		foreach ($this->settings[$Model->alias]['habtm'] as $habtmModel) {
 			if (array_key_exists($habtmModel, $Model->hasAndBelongsToMany) && isset($data[$habtmModel])) {
 				$habtmIds = Hash::combine(
@@ -370,7 +389,6 @@ class AuditableBehavior extends \ModelBehavior {
 					'{n}.id',
 					'{n}.id'
 				);
-
 				// Grab just the ID values and sort those.
 				$habtmIds = array_values($habtmIds);
 				sort($habtmIds);
