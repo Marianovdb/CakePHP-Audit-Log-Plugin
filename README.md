@@ -1,6 +1,6 @@
 # Audit Log Plugin
 
-This is a fork from https://github.com/robwilkerson/CakePHP-Audit-Log-Plugin.
+This is a fork from https://github.com/robwilkerson/CakePHP-Audit-Log-Plugin, thank you for all your work and for the work of your collaborators.
 
 A logging plugin for [CakePHP](http://cakephp.org) 2.x. The included `AuditableBehavior`  creates an audit history for each instance of a model to which it's attached.
 
