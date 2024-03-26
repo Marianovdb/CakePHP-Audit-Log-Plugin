@@ -86,7 +86,7 @@ class AuditableBehaviorTest extends CakeTestCase {
 	}
 
 /**
- * Test the action of creating a new record with dontSaveCreateDelta option.
+ * Test the action of creating a new record and update it with dontSaveCreateDelta option.
  *
  * @return void
  */
@@ -130,6 +130,44 @@ class AuditableBehaviorTest extends CakeTestCase {
 
 		// Verify that delta record were created, too.
 		$this->assertCount(0, $deltas);
+
+		//Now the data update
+		$updateArticle = array(
+			'ArticleDontSaveCreateDelta' => array(
+				'id' => $this->ArticleDontSaveCreateDelta->getLastInsertId(),
+				'user_id' => 2,
+			),
+		);
+
+		$this->ArticleDontSaveCreateDelta->save($updateArticle);
+
+		$audit = $this->Audit->find(
+			'first',
+			array(
+				'recursive' => -1,
+				'conditions' => array(
+					'Audit.event' => 'EDIT',
+					'Audit.model' => 'ArticleDontSaveCreateDelta',
+					'Audit.entity_id' => $this->ArticleDontSaveCreateDelta->getLastInsertId(),
+				),
+			)
+		);
+		
+		$article = json_decode($audit['Audit']['json_object'], true);
+		
+		// Verify the audit record.
+		$this->assertEquals(2, $article['ArticleDontSaveCreateDelta']['user_id']);
+
+		$deltas = $this->AuditDelta->find(
+			'all',
+			array(
+				'recursive' => -1,
+				'conditions' => array('AuditDelta.audit_id' => $audit['Audit']['id']),
+			)
+		);
+
+		// Verify that delta record were created, too.
+		$this->assertCount(1, $deltas);
 	}
 
 /**

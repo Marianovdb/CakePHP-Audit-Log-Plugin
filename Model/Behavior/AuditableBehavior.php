@@ -214,48 +214,44 @@ class AuditableBehavior extends \ModelBehavior {
 		// We have the audit_logs record, so let's collect the set of
 		// records that we'll insert into the audit_log_deltas table.
 		// if not set the dontSaveCreateDelta option
-		$updates = array();
-		if(!array_key_exists('dontSaveCreateDelta', $this->settings[$Model->alias])){
-			foreach ($audit[$Model->alias] as $property => $value) {
-				$delta = array();
-
-				// Ignore virtual fields (Cake 1.3+) and specified properties.
-				if (($Model->hasMethod('isVirtualField') && $Model->isVirtualField($property))
-					|| in_array($property, $this->settings[$Model->alias]['ignore'])
-				) {
-					continue;
-				}
-				if ($created) {
-					if($value != '' && $value != null){
-						$delta = array(
-							'AuditDelta' => array(
-								'property_name' => $property,
-								'old_value' => '',
-								'new_value' => $value,
-							),
-						);
-					}				
-				} else {
-					if ((Hash::check($this->_getOriginalDataForModel($Model), $property)
-						&& Hash::get($this->_getOriginalDataForModel($Model), $property) != $value
-					) || (Hash::get($this->_getOriginalDataForModel($Model), $property) == null &&  $value != null and $value!="")) {
-						// If the property exists in the original _and_ the
-						// value is different, store it.
-						$delta = array(
-							'AuditDelta' => array(
-								'property_name' => $property,
-								'old_value' => Hash::get($this->_getOriginalDataForModel($Model), $property),
-								'new_value' => $value,
-							),
-						);
-					}
-				}
-				if (!empty($delta)) {
-					array_push($updates, $delta);
+		$updates = array();		
+		foreach ($audit[$Model->alias] as $property => $value) {
+			$delta = array();
+			// Ignore virtual fields (Cake 1.3+) and specified properties.
+			if (($Model->hasMethod('isVirtualField') && $Model->isVirtualField($property))
+				|| in_array($property, $this->settings[$Model->alias]['ignore'])
+			) {
+				continue;
+			}
+			if ($created) {
+				if($value != '' && $value != null && !array_key_exists('dontSaveCreateDelta', $this->settings[$Model->alias])){
+					$delta = array(
+						'AuditDelta' => array(
+							'property_name' => $property,
+							'old_value' => '',
+							'new_value' => $value,
+						),
+					);
+				}				
+			} else {
+				if ((Hash::check($this->_getOriginalDataForModel($Model), $property)
+					&& Hash::get($this->_getOriginalDataForModel($Model), $property) != $value
+				) || (Hash::get($this->_getOriginalDataForModel($Model), $property) == null &&  $value != null and $value!="")) {
+					// If the property exists in the original _and_ the
+					// value is different, store it.
+					$delta = array(
+						'AuditDelta' => array(
+							'property_name' => $property,
+							'old_value' => Hash::get($this->_getOriginalDataForModel($Model), $property),
+							'new_value' => $value,
+						),
+					);
 				}
 			}
+			if (!empty($delta)) {
+				array_push($updates, $delta);
+			}
 		}
-
 		// Insert an audit record if a new model record is being created
 		// or if something we care about actually changed.
 		if ($created || count($updates)) {
