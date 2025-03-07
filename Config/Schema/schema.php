@@ -65,7 +65,8 @@ class AuditLogSchema extends CakeSchema {
 		'created' => array('type' => 'datetime', 'null' => false, 'default' => null, 'collate' => null, 'comment' => ''),
 		'indexes' => array(
 			'PRIMARY' => array('column' => 'id', 'unique' => 1),
-			'model' => array('column' => 'model', 'unique' => false)
+			'model' => array('column' => 'model', 'unique' => false),
+			'entity_id' => array('column' => 'entity_id', 'unique' => false),
 		),
 		'tableParameters' => array('charset' => 'utf8', 'collate' => 'utf8_general_ci', 'engine' => 'InnoDB')
 	);
